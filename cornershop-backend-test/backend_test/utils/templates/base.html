@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <title>Cornershop Menu</title>
+</head>
+<body>
+<header class="site-header">
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand nav-link" href="meal">Meals</a>
+            <a class="navbar-brand nav-link" href="combination">Combinations</a>
+            <a class="navbar-brand nav-link" href="menu">Menus</a>
+            <div class="navbar-nav ml-4">
+                <a class="nav-item nav-link" href="login">Authentication</a>
+            </div>
+        </div>
+    </nav>
+</header>
+<main role="main" class="container">
+    <div class="row">
+        <div class="col-md-8">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+</main>
+</body>
+<script>
+    function login() {
+        let username = document.getElementById("username").value;
+        let password = document.getElementById("password").value;
+        fetch("../auth/login/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({username: username, password: password}),
+            redirect: "follow",
+        }).then((response) => {
+            if (response.status == 200) {
+                alert("Login success");
+            } else {
+                alert("Login failed");
+            }
+        });
+    }
+
+    function logout() {
+        fetch("../auth/logout/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": get_cookie("csrftoken"),
+            },
+        }).then((response) => {
+            if (response.status == 200) {
+                alert("Success");
+            } else {
+                alert("Something went wrong");
+            }
+        });
+    }
+
+    function register() {
+        let name = document.getElementById("name").value;
+        let username = document.getElementById("new_username").value;
+        let password = document.getElementById("new_password").value;
+        let slack_id = document.getElementById("slack_id").value;
+        fetch("../restaurant/employee/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                name: name,
+                username: username,
+                password: password,
+                slack_id: slack_id,
+            }),
+        }).then((response) => {
+            if (response.status == 201) {
+                alert("Success");
+            } else {
+                alert("Failed");
+            }
+        });
+    }
+
+    function post(endpoint) {
+        let fields = [];
+        if (endpoint == '/restaurant/meal/') {
+            fields = ["name", "unit_cost", "unit_label", "stock"];
+        } else if (endpoint == '/restaurant/combination/') {
+            fields = ["meals", "description"];
+        } else if (endpoint == '/restaurant/menu/') {
+            fields = ["date", "combinations"];
+        }
+        let data = {};
+        fields.forEach((field) => {
+            let value = [];
+            if (field == 'meals') {
+                let meals = document.getElementsByClassName("select_meal_input");
+                for (let m of meals){
+                    if (m.checked){
+                        value.push(m.id)
+                    }
+                }
+            } else if (field == 'combinations') {
+                let combinations = document.getElementsByClassName("select_combination_input");
+                for (let m of combinations){
+                    if (m.checked){
+                        value.push(m.id)
+                    }
+                }
+            } else {
+                value = document.getElementById(field).value;
+            }
+            data[field] = value;
+        });
+        fetch(endpoint, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": get_cookie("csrftoken"),
+            },
+            body: JSON.stringify(data),
+        });//.then(() => location.reload());
+    }
+
+    function send_reminders(id){
+        fetch('../restaurant/menu/send_reminders/', {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": get_cookie("csrftoken"),
+            },
+            body: JSON.stringify({'id': id}),
+        }).then(() => alert('Sent!'));
+    }
+
+    function get_cookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === name + "=") {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+</html>

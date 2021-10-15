@@ -22,6 +22,7 @@ from .envtools import getenv
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = getenv("SECRET_KEY", default="###SECRET_KEY###")
+SLACK_TOKEN = getenv("SLACK_TOKEN", default="xoxb-2593331801751-2605065321397-tBklm6beIrBH6oTmvvnoqL2J")
 
 DEBUG = getenv("DEBUG", default=False, coalesce=bool)
 
@@ -73,7 +74,7 @@ ROOT_URLCONF = "backend_test.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": ["backend_test/utils/templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -139,7 +140,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = 'America/Santiago'
 
 USE_I18N = True
 
@@ -155,9 +156,14 @@ STATIC_URL = "/static/"
 
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
-    "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.SessionAuthentication",
-    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        # 'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ),
+    # 'DEFAULT_PERMISSION_CLASSES': [
+    #     'rest_framework.permissions.IsAuthenticated',
+    # ]
 }
 
 if getenv("BROWSABLE_API_RENDERER", default=False, coalesce=bool):

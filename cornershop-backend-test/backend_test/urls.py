@@ -14,7 +14,6 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path
-from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from django.conf.urls import include
@@ -42,7 +41,8 @@ urlpatterns = [
    path('auth/', include('rest_auth.urls')),
    path('restaurant/', include('backend_test.restaurant.urls')),
    path('views/login', login, name='login'),
-   path('views/create_menu', create_menu, name='menu'),
-   path('views/create_meal', create_meal, name='meal')
+   path('views/meal', meal, name='meal'),
+   path('views/combination', combination, name='combination'),
+   path('views/menu', menu, name='menu')
 ]
 

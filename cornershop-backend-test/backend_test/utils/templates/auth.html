@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+    <div class="container col-6">
+        <h1>Sign-In</h1>
+        <form action="javascript:login()" method="post">
+            {% for field in login_fields %}
+            <label for="{{field.id}}">{{field.label}}</label><br>
+            <input type="{{field.type}}" id="{{field.id}}" name="{{field.id}}"><br>
+            {% endfor %}
+            <input type="submit" value="Sign-in"></form>
+    </div>
+    <div class="container col-6">
+        <p>Don't have an account? Create yours right now!</p>
+        <h1>Sign-Up</h1>
+        <form action="javascript:register()" method="post">
+            {% for field in register_fields %}
+            <label for="{{field.id}}">{{field.label}}</label><br>
+            <input type="{{field.type}}" id="{{field.id}}" name="{{field.id}}"><br>
+            {% endfor %}
+            <input type="submit" value="Sign-up"></form>
+    </div>
+</div>
+<button onclick="logout()">Log-out</button>
+{% endblock content %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Menu for today</h1>
+<div class="row">
+    {% for combination in combinations %}
+    <div class="col-6">
+        <h2>
+            {{combination.name}}
+        </h2>
+        {% for meal in combination.values %}
+        <h4>{{meal}}</h4>
+        {% endfor %}
+        <input type="text" placeholder="Observations/Notes"><br>
+        <input type="submit" value="Select"></form>
+    </div>
+    {% endfor %}
+</div>
+<script>
+    function myFunction() {
+        document.getElementById("search_list").classList.toggle("show");
+    }
+
+    function filterFunction() {
+        var input, filter, a, i;
+        input = document.getElementById("search_text");
+        filter = input.value.toUpperCase();
+        div = document.getElementById("search_list");
+        a = div.getElementsByTagName("label");
+        for (i = 0; i < a.length; i++) {
+            txtValue = a[i].textContent || a[i].innerText;
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                a[i].style.display = "";
+            } else {
+                a[i].style.display = "none";
+            }
+        }
+    }
+</script>
+<style>
+
+</style>
+{% endblock content %}

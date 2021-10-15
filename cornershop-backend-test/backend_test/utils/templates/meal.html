@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Meals</h1>
+{% if table %}
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Unit cost</th>
+        <th>Stock</th>
+        <th>Unit label</th>
+    </tr>
+    {% for row in table %}
+    <tr>
+        <td>{{ row.name }}</td>
+        <td>{{ row.unit_cost }}</td>
+        <td>{{ row.stock }}</td>
+        <td>{{ row.unit_label }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No data available</p>
+{% endif %}
+<h1>Create new meal</h1>
+<form action="javascript:post('/restaurant/meal/')" method="post">
+    {% for field in fields %}
+    <label for="{{field.id}}">{{field.label}}</label><br>
+    {% if field.options %}
+    <select name="{{field.id}}" id="{{field.id}}">
+        {% for option in field.options %}
+        <option value={{option.0}}>{{option.1}}</option>
+        {% endfor %}
+    </select><br>
+    {% else %}
+    <input type="{{field.type}}" id="{{field.id}}" name="{{field.id}}"><br>
+    {% endif %}
+    {% endfor %}
+    <input type="submit" value="Create"></form>
+{% endblock content %}

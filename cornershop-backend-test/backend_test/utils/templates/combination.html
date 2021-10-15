@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Combinations</h1>
+{% if table %}
+<table>
+    <tr>
+        <th>Meals</th>
+        <th>Description</th>
+    </tr>
+    {% for row in table %}
+    <tr>
+        <td>{{ row.meals }}</td>
+        <td>{{ row.description }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No data available</p>
+{% endif %}
+<h1>Create new combination</h1>
+<div class="row">
+    <div class="col-6">
+        <form action="javascript:post('/restaurant/combination/')" method="post">
+            {% for field in fields %}
+            <label for="{{field.id}}">{{field.label}}</label><br>
+            {% if field.options %}
+            <div class="dropdown">
+                <button onclick="myFunction()" class="dropbtn">Search</button>
+                <div id="search_list" class="dropdown-content">
+                    <input type="text" placeholder="Search.." id="search_text" onkeyup="filterFunction()">
+                    {% for meal in meals %}
+                    <label class="switch">
+                        {{meal.name}}
+                        <input class="select_meal_input" type="checkbox" id="{{meal.id}}">
+                        <span class="slider round"></span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            {% else %}
+            <input type="{{field.type}}" id="{{field.id}}" name="{{field.id}}"><br>
+            {% endif %}
+            {% endfor %}
+            <input type="submit" value="Create"></form>
+    </div>
+</div>
+<script>
+    function myFunction() {
+        document.getElementById("search_list").classList.toggle("show");
+    }
+    function filterFunction() {
+        var input, filter, a, i;
+        input = document.getElementById("search_text");
+        filter = input.value.toUpperCase();
+        div = document.getElementById("search_list");
+        a = div.getElementsByTagName("label");
+        for (i = 0; i < a.length; i++) {
+            txtValue = a[i].textContent || a[i].innerText;
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                a[i].style.display = "";
+            } else {
+                a[i].style.display = "none";
+            }
+        }
+    }
+</script>
+<style>
+
+</style>
+{% endblock content %}

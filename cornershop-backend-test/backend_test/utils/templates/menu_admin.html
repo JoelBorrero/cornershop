@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Menus</h1>
+{% if table %}
+<table>
+    <tr>
+        <th>Date</th>
+        <th>Options</th>
+        <th>Send reminder</th>
+    </tr>
+    {% for row in table %}
+    <tr>
+        <td>{{ row.date }}</td>
+        <td>{{ row.combinations }}</td>
+        <td><button onclick="send_reminders({{row.id}})">Remind</button></td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No data available</p>
+{% endif %}
+<h1>Create new menu</h1>
+<div class="row">
+    <div class="col-6">
+        <form action="javascript:post('/restaurant/menu/')" method="post">
+            {% for field in fields %}
+            <label for="{{field.id}}">{{field.label}}</label><br>
+            {% if field.options %}
+            <div class="dropdown">
+                <button onclick="myFunction()" class="dropbtn">Search</button>
+                <div id="search_list" class="dropdown-content">
+                    <input type="text" placeholder="Search.." id="search_text" onkeyup="filterFunction()">
+                    {% for combination in combinations %}
+                    <label class="switch">
+                        {{combination.description}}
+                        <input class="select_combination_input" type="checkbox" id="{{combination.id}}">
+                        <span class="slider round"></span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            {% else %}
+            <input type="{{field.type}}" id="{{field.id}}" name="{{field.id}}"><br>
+            {% endif %}
+            {% endfor %}
+            <input type="submit" value="Create"></form>
+    </div>
+</div>
+<script>
+    function myFunction() {
+        document.getElementById("search_list").classList.toggle("show");
+    }
+    function filterFunction() {
+        var input, filter, a, i;
+        input = document.getElementById("search_text");
+        filter = input.value.toUpperCase();
+        div = document.getElementById("search_list");
+        a = div.getElementsByTagName("label");
+        for (i = 0; i < a.length; i++) {
+            txtValue = a[i].textContent || a[i].innerText;
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                a[i].style.display = "";
+            } else {
+                a[i].style.display = "none";
+            }
+        }
+    }
+</script>
+<style>
+
+</style>
+{% endblock content %}
