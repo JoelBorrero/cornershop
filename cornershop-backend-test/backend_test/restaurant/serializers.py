@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Employee, Meal, Combination, Menu
+from .models import Employee, Meal, Combination, Menu, Order
 
 
 class EmployeeSerializer(serializers.ModelSerializer):
@@ -24,3 +24,16 @@ class MenuSerializer(serializers.ModelSerializer):
     class Meta:
         model = Menu
         fields = ['id', 'date', 'combinations']
+
+
+class MenuSerializerDeep(serializers.ModelSerializer):
+    class Meta:
+        model = Menu
+        fields = ['id', 'date', 'combinations']
+        depth = 2
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ['id', 'owner', 'menu', 'combination', 'observations']

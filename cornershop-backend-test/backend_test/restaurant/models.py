@@ -37,5 +37,6 @@ class Menu(models.Model):
 
 class Order(models.Model):
     owner = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    menu = models.ForeignKey(Menu, on_delete=models.CASCADE)
     combination = models.ForeignKey(Combination, on_delete=models.CASCADE)
-    comments = models.TextField(blank=True)
+    observations = models.TextField(blank=True)

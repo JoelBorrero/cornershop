@@ -22,7 +22,7 @@ from .envtools import getenv
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = getenv("SECRET_KEY", default="###SECRET_KEY###")
-SLACK_TOKEN = getenv("SLACK_TOKEN", default="xoxb-2593331801751-2605065321397-tBklm6beIrBH6oTmvvnoqL2J")
+SLACK_TOKEN = getenv("SLACK_TOKEN", default="###SLACK_TOKEN###")
 
 DEBUG = getenv("DEBUG", default=False, coalesce=bool)
 

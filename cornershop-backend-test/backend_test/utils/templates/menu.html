@@ -1,42 +1,77 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Menu for today</h1>
-<div class="row">
-    {% for combination in combinations %}
-    <div class="col-6">
-        <h2>
-            {{combination.name}}
-        </h2>
-        {% for meal in combination.values %}
-        <h4>{{meal}}</h4>
-        {% endfor %}
-        <input type="text" placeholder="Observations/Notes"><br>
-        <input type="submit" value="Select"></form>
-    </div>
-    {% endfor %}
-</div>
-<script>
-    function myFunction() {
-        document.getElementById("search_list").classList.toggle("show");
-    }
-
-    function filterFunction() {
-        var input, filter, a, i;
-        input = document.getElementById("search_text");
-        filter = input.value.toUpperCase();
-        div = document.getElementById("search_list");
-        a = div.getElementsByTagName("label");
-        for (i = 0; i < a.length; i++) {
-            txtValue = a[i].textContent || a[i].innerText;
-            if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                a[i].style.display = "";
-            } else {
-                a[i].style.display = "none";
+    <div class="w-100">
+        <h1>Menu for today</h1>
+        <h3>{{ today_menu.date }}</h3><br>
+        <div class="row">
+            {% for combination in today_menu.combinations %}
+                <div class="col-6">
+                    <h5>
+                        {{ combination.index }}
+                    </h5>
+                    <h2>{{ combination.description }}</h2>
+                    {% for meal in combination.values %}
+                        <h4>{{ meal }}</h4>
+                    {% endfor %}
+                    {% if submittable %}
+                        <form action="javascript:request('/restaurant/order/', 'POST',
+                        menu={{ today_menu.id }}, combination={{ combination.id }})" method="post">
+                            {% if combination.index == 'Option 1' %}
+                                <input id="observations" type="text" placeholder="Observations/Notes"><br>
+                            {% endif %}
+                            <input type="submit" value="Select">
+                        </form>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            {% if not submittable %}
+                <h4 class="text-danger w-100">The today's menu is closed</h4>
+                {% if next_menu.combinations %}
+                    <button onclick="show_next_menu()">See next's</button>
+                    <div id="next_menu_container" class="hidden w-100">
+                    <div class="col-xs-12">
+                        <h2>Menu for {{ next_menu.date }}<br></h2>
+                        <div class="row">
+                            {% for combination in next_menu.combinations %}
+                                <div class="col-6">
+                                    <h5>{{ combination.index }}</h5>
+                                    <h2>
+                                        {{ combination.description }}
+                                    </h2>
+                                    {% for meal in combination.values %}
+                                        <h4>{{ meal }}</h4>
+                                    {% endfor %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endif %}
+            </div>
+        </div>
+        <script>
+            function myFunction() {
+                document.getElementById("search_list").classList.toggle("show");
             }
-        }
-    }
-</script>
-<style>
 
-</style>
+            function filterFunction() {
+                var input, filter, a, i;
+                input = document.getElementById("search_text");
+                filter = input.value.toUpperCase();
+                div = document.getElementById("search_list");
+                a = div.getElementsByTagName("label");
+                for (i = 0; i < a.length; i++) {
+                    txtValue = a[i].textContent || a[i].innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        a[i].style.display = "";
+                    } else {
+                        a[i].style.display = "none";
+                    }
+                }
+            }
+
+            function show_next_menu() {
+                document.getElementById('next_menu_container').className = 'w-100'
+            }
+        </script>
 {% endblock content %}

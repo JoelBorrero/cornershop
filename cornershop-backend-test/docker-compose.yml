@@ -10,12 +10,9 @@ services:
       - DEBUG=${DEBUG:-True}
       - APP_LOGGING_LEVEL=${APP_LOGGING_LEVEL:-INFO}
       - DB_LOGGING_LEVEL=${DB_LOGGING_LEVEL:-INFO}
-      - DJANGO_SETTINGS_MODULE=backend_test.settings
-      - APP=backend_test
-      - QUEUES=celery
-      - PYTHONDONTWRITEBYTECODE=1
       # forwarded from the host if they exist
       - UPDATE_PYTHON_REQUIREMENTS_ON_CONTAINERSTART
+    env_file: .env
     volumes:
       - .:/opt/cornershop/backend-test
     ports:
@@ -34,21 +31,14 @@ services:
     volumes:
       - .:/opt/cornershop/backend-test
     environment:
-      - DJANGO_SETTINGS_MODULE=backend_test.settings
-      - PYTHONDONTWRITEBYTECODE=1
-      - DJANGO_ALLOW_ASYNC_UNSAFE=true
-      - APP=backend_test
-      - QUEUES=celery
       # forwarded from the host if they exist
       - UPDATE_PYTHON_REQUIREMENTS_ON_CONTAINERSTART
+    env_file: .env
   postgres:
     image: circleci/postgres:12.3-postgis
     volumes:
       - postgres123-data:/var/lib/postgresql/data/
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=postgres
+    env_file: .env
     ports:
       - 5432:5432
   testdb:

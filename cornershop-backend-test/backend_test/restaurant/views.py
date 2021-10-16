@@ -1,4 +1,5 @@
 from django.contrib.sites.shortcuts import get_current_site
+from django.db.models import Q
 from django.shortcuts import render
 from rest_framework import permissions
 from rest_framework.decorators import (
@@ -9,9 +10,9 @@ from django.http import HttpResponse
 from django.template import loader
 
 from ..utils.constants import *
-from .models import Meal, Combination, Menu
-from .serializers import MealSerializer, CombinationSerializer, MenuSerializer
-from .services import get_next_menu_info
+from .models import Meal, Combination, Menu, Order
+from .serializers import MealSerializer, CombinationSerializer, MenuSerializer, MenuSerializerDeep
+from .services import get_menus_info
 
 
 @api_view(['GET', 'HEAD'])
@@ -51,7 +52,7 @@ def combination(request, *args, **kwargs):
     menu_items = CombinationSerializer(menus_list, many=True).data
     meals_list = Meal.objects.all()
     meal_items = MealSerializer(meals_list, many=True).data
-    # List intercepted to show name instead id
+    # List intercepted to show name instead of id
     # for menu in menu_items:
     #     for index, combination in enumerate(menu['combinations']):
     #         menu['combinations'][index] = Meal.objects.filter(id=combination).first().name
@@ -61,27 +62,41 @@ def combination(request, *args, **kwargs):
 
 
 @api_view(['GET', 'HEAD'])
-# @permission_classes([permissions.IsAdminUser])
-@permission_classes([permissions.IsAuthenticated])
+# @permission_classes([permissions.IsAuthenticated])
 def menu(request, *args, **kwargs):
     """
     This view is restricted to only authenticated users.
     For admin allows the visualization and creation of all meals menus.
     For users allows the selection of their preferred option.
     """
-    menus_list = Menu.objects.order_by('date')
-    menu_items = MenuSerializer(menus_list, many=True).data
-    combinations_list = Combination.objects.all()
-    combination_items = CombinationSerializer(combinations_list, many=True).data
     if request.user.is_superuser:
-        # List intercepted to show name instead id
-        # for menu in menu_items:
-        #     for index, combination in enumerate(menu['combinations']):
-        #         menu['combinations'][index] = Combination.objects.filter(id=combination).first().name
-        template = loader.get_template('menu_admin.html')
-        document = template.render({'combinations': combination_items, 'fields': MENU_FIELDS, 'table': menu_items})
-    else:
-        combinations = get_next_menu_info()
+        if 'id' in kwargs:
+            menu = Menu.objects.get(id=kwargs['id'])
+            serializer = MenuSerializerDeep(menu).data
+            for combination in serializer['combinations']:
+                # order = Order.objects.filter(Q(combination=combination['id']) & Q(menu=menu.id))
+                order = Order.objects.filter(combination=combination['id']).filter(menu=menu.id)
+                combination['requests'] = [{'owner': o.owner.first_name, 'observations': o.observations}
+                                           for o in order]
+            template = loader.get_template('menu_detail_admin.html')
+            document = template.render({'menu': serializer})
+        else:
+            menus_list = Menu.objects.order_by('date')
+            # Parses OrderedDict into Dict objects
+            menu_items = [dict(m) for m in MenuSerializer(menus_list, many=True).data]
+            combinations_list = Combination.objects.all()
+            combination_items = CombinationSerializer(combinations_list, many=True).data
+            # List intercepted to show name instead of id
+            for menu in menu_items:
+                for index, combination in enumerate(menu['combinations']):
+                    menu['combinations'][index] = ', '.join(
+                        [meal.name for meal in Combination.objects.get(id=combination).meals.all()])
+            template = loader.get_template('menu_admin.html')
+            document = template.render({'combinations': combination_items, 'fields': MENU_FIELDS, 'table': menu_items})
+    elif request.user.is_authenticated:
+        submittable, today_menu, next_menu = get_menus_info()
         template = loader.get_template('menu.html')
-        document = template.render({'combinations': combinations})
+        document = template.render({'today_menu': today_menu, 'next_menu': next_menu, 'submittable': submittable})
+    else:
+        document = '<h1>Non-authenticated</h1>'
     return HttpResponse(document, status=200)

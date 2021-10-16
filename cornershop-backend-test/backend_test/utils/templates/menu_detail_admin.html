@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block content %}
+    <a href="/views/menu">Go back</a>
+    <div class="w-100">
+        <h1>Menu for {{ menu.date }}</h1>
+        <div class="row">
+            {% for combination in menu.combinations %}
+                <div class="col-6">
+                    <h5>
+                        {{ combination.index }}
+                    </h5>
+                    <h4>{{ combination.description }}</h4>
+                    <ul>
+                        {% for meal in combination.meals %}
+                            <li>{{ meal.name }} ({{ meal.stock }} {{ meal.unit_label }} remaining)</li>
+                        {% endfor %}
+                    </ul>
+                    Requests:
+                    <ul>
+                        {% for request in combination.requests %}
+                            <li>
+                                <p>
+                                    <strong>{{ request.owner }}:</strong> {{ request.observations }}
+                                </p>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endfor %}
+            <script>
+                var editing = undefined;
+
+                function myFunction() {
+                    document.getElementById("search_list").classList.toggle("show");
+                }
+
+                function filterFunction() {
+                    var input, filter, a, i;
+                    input = document.getElementById("search_text");
+                    filter = input.value.toUpperCase();
+                    div = document.getElementById("search_list");
+                    a = div.getElementsByTagName("label");
+                    for (i = 0; i < a.length; i++) {
+                        txtValue = a[i].textContent || a[i].innerText;
+                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                            a[i].className = "";
+                        } else {
+                            a[i].className = "hidden";
+                        }
+                    }
+                }
+
+                function edit(id) {
+                    document.getElementById('create_menu').className = 'hidden';
+                    document.getElementById('edit_menu').className = '';
+                    editing =
+                    {{ table|safe }}.
+                    filter((t) => t.id == id)[0];
+                }
+
+                function cancel() {
+                    document.getElementById('create_menu').className = '';
+                    document.getElementById('edit_menu').className = 'hidden';
+                    console.log('cancel');
+                }
+
+                function save() {
+                    document.getElementById('create_menu').className = '';
+                    document.getElementById('edit_menu').className = 'hidden';
+                    console.log(editing);
+                }
+            </script>
+{% endblock content %}

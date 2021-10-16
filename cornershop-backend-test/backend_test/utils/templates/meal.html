@@ -1,39 +1,64 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Meals</h1>
-{% if table %}
-<table>
-    <tr>
-        <th>Name</th>
-        <th>Unit cost</th>
-        <th>Stock</th>
-        <th>Unit label</th>
-    </tr>
-    {% for row in table %}
-    <tr>
-        <td>{{ row.name }}</td>
-        <td>{{ row.unit_cost }}</td>
-        <td>{{ row.stock }}</td>
-        <td>{{ row.unit_label }}</td>
-    </tr>
-    {% endfor %}
-</table>
-{% else %}
-<p>No data available</p>
-{% endif %}
-<h1>Create new meal</h1>
-<form action="javascript:post('/restaurant/meal/')" method="post">
-    {% for field in fields %}
-    <label for="{{field.id}}">{{field.label}}</label><br>
-    {% if field.options %}
-    <select name="{{field.id}}" id="{{field.id}}">
-        {% for option in field.options %}
-        <option value={{option.0}}>{{option.1}}</option>
-        {% endfor %}
-    </select><br>
+    <h1>Meals</h1>
+    {% if table %}
+        <form id="meals_table" action="javascript:update_stock()" method="POST">
+            <table>
+                <tr>
+                    <th>Name</th>
+                    <th>Unit cost</th>
+                    <th>Unit label</th>
+                    <th>Stock</th>
+                </tr>
+                {% for row in table %}
+                    <tr>
+                        <td>{{ row.name }}</td>
+                        <td class="text-right">{{ row.unit_cost }}</td>
+                        <td>{{ row.unit_label }}</td>
+                        <td><input name={{ row.id }} type="number" value="{{ row.stock }}"></td>
+                    </tr>
+                {% endfor %}
+            </table>
+            <input type="submit" value="Save">
+        </form>
     {% else %}
-    <input type="{{field.type}}" id="{{field.id}}" name="{{field.id}}"><br>
+        <p>No data available</p>
     {% endif %}
-    {% endfor %}
-    <input type="submit" value="Create"></form>
+    <h1>Create new meal</h1>
+    <form action="javascript:request('/restaurant/meal/')" method="post">
+        {% for field in fields %}
+            <label for="{{ field.id }}">{{ field.label }}</label><br>
+            {% if field.options %}
+                <select name="{{ field.id }}" id="{{ field.id }}">
+                    {% for option in field.options %}
+                        <option value={{ option.0 }}>{{ option.1 }}</option>
+                    {% endfor %}
+                </select><br>
+            {% else %}
+                <input type="{{ field.type }}" id="{{ field.id }}" name="{{ field.id }}"><br>
+            {% endif %}
+        {% endfor %}
+        <input type="submit" value="Create"></form>
+    <script>
+        function update_stock() {
+            let data = []
+            let fields = document.getElementById('meals_table');
+            for (let i = 0; i < fields.length; i++) {
+                if (fields[i].type == "number") {
+                    data.push({id: fields[i].name, stock: fields[i].value});
+                }
+            }
+            fetch('/restaurant/meal/update_stock/', {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": get_cookie("csrftoken"),
+                },
+                body: JSON.stringify(data),
+            }).then(() => {
+                alert('Updated successfully');
+                location.reload()
+            });
+        }
+    </script>
 {% endblock content %}

@@ -9,18 +9,18 @@
 <header class="site-header">
     <nav class="navbar navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand nav-link" href="meal">Meals</a>
-            <a class="navbar-brand nav-link" href="combination">Combinations</a>
-            <a class="navbar-brand nav-link" href="menu">Menus</a>
+            <a class="navbar-brand nav-link" href="/views/meal">Meals</a>
+            <a class="navbar-brand nav-link" href="/views/combination">Combinations</a>
+            <a class="navbar-brand nav-link" href="/views/menu">Menus</a>
             <div class="navbar-nav ml-4">
-                <a class="nav-item nav-link" href="login">Authentication</a>
+                <a class="nav-item nav-link" href="/views/login">Authentication</a>
             </div>
         </div>
     </nav>
 </header>
 <main role="main" class="container">
     <div class="row">
-        <div class="col-md-8">
+        <div class="w-100">
             {% block content %}{% endblock %}
         </div>
     </div>
@@ -87,48 +87,68 @@
         });
     }
 
-    function post(endpoint) {
+    function request(endpoint, method = 'POST', menu = undefined, combination = undefined) {
+        // Receives the endpoint and the method to perform the request
         let fields = [];
+        // According to the endpoint, the data will be generated
         if (endpoint == '/restaurant/meal/') {
             fields = ["name", "unit_cost", "unit_label", "stock"];
         } else if (endpoint == '/restaurant/combination/') {
             fields = ["meals", "description"];
         } else if (endpoint == '/restaurant/menu/') {
             fields = ["date", "combinations"];
+        } else if (endpoint == '/restaurant/order/') {
+            fields = ["observations"];
+        }
+        if (method == 'PUT') {
+            endpoint += editing.id + '/';
         }
         let data = {};
+        // And now iterate through the defined fields to fill the data
         fields.forEach((field) => {
+            console.log(field)
             let value = [];
             if (field == 'meals') {
                 let meals = document.getElementsByClassName("select_meal_input");
-                for (let m of meals){
-                    if (m.checked){
+                for (let m of meals) {
+                    if (m.checked) {
                         value.push(m.id)
                     }
                 }
             } else if (field == 'combinations') {
                 let combinations = document.getElementsByClassName("select_combination_input");
-                for (let m of combinations){
-                    if (m.checked){
+                for (let m of combinations) {
+                    if (m.checked) {
                         value.push(m.id)
                     }
                 }
             } else {
-                value = document.getElementById(field).value;
+                if (method == 'PUT') {
+                    value = document.getElementById(field + '_edit').value;
+                } else {
+                    value = document.getElementById(field).value;
+                }
             }
             data[field] = value;
         });
+        if (menu && combination) {
+            data['menu'] = menu;
+            data['combination'] = combination;
+        }
         fetch(endpoint, {
-            method: "POST",
+            method: method,
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRFToken": get_cookie("csrftoken"),
             },
             body: JSON.stringify(data),
-        });//.then(() => location.reload());
+        }).then(() => {
+            alert('Sent!');
+            location.reload();
+        });
     }
 
-    function send_reminders(id){
+    function send_reminders(id) {
         fetch('../restaurant/menu/send_reminders/', {
             method: "POST",
             headers: {
@@ -154,4 +174,9 @@
         return cookieValue;
     }
 </script>
+<style>
+    .hidden {
+        display: none;
+    }
+</style>
 </html>

@@ -7,6 +7,7 @@ router.register('employee', viewsets.EmployeeViewSet, basename='employee')
 router.register('meal', viewsets.MealViewSet, basename='meal')
 router.register('combination', viewsets.CombinationViewSet, basename='combination')
 router.register('menu', viewsets.MenuViewSet, basename='menu')
+router.register('order', viewsets.OrderViewSet, basename='order')
 
 
 urlpatterns = [

@@ -13,7 +13,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.urls import path
+from django.urls import path, re_path
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from django.conf.urls import include
@@ -43,6 +43,7 @@ urlpatterns = [
    path('views/login', login, name='login'),
    path('views/meal', meal, name='meal'),
    path('views/combination', combination, name='combination'),
-   path('views/menu', menu, name='menu')
+   path('views/menu', menu, name='menu'),
+   re_path(r'views/menu/(?P<id>\d+)/$', menu, name='menu_detail')
 ]
 
