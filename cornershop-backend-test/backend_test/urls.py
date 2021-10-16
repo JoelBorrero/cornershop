@@ -44,6 +44,6 @@ urlpatterns = [
    path('views/meal', meal, name='meal'),
    path('views/combination', combination, name='combination'),
    path('views/menu', menu, name='menu'),
-   re_path(r'views/menu/(?P<id>\d+)/$', menu, name='menu_detail')
+   re_path(r'views/menu/(?P<uuid>[a-z0-9]+)/$', menu, name='menu_detail')
 ]
 

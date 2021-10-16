@@ -23,7 +23,7 @@ class CombinationSerializer(serializers.ModelSerializer):
 class MenuSerializer(serializers.ModelSerializer):
     class Meta:
         model = Menu
-        fields = ['id', 'date', 'combinations']
+        fields = ['id', 'date', 'combinations', 'uuid']
 
 
 class MenuSerializerDeep(serializers.ModelSerializer):

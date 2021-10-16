@@ -9,7 +9,8 @@ from rest_framework.response import Response
 
 from .models import Employee, Meal, Combination, Menu, Order
 from .serializers import EmployeeSerializer, MealSerializer, CombinationSerializer, MenuSerializer, OrderSerializer
-from .services import send_slack_reminders, check_date_availability
+from .services import check_date_availability, make_hash
+from .tasks import send_slack_reminders
 
 
 class EmployeeViewSet(viewsets.ModelViewSet):
@@ -53,6 +54,7 @@ class MealViewSet(viewsets.ModelViewSet):
             meal.save()
         return Response(request.data, status=status.HTTP_200_OK)
 
+
 @permission_classes([permissions.IsAdminUser])
 class CombinationViewSet(viewsets.ModelViewSet):
     model = Combination
@@ -72,7 +74,7 @@ class MenuViewSet(viewsets.ModelViewSet):
         """
         data = request.data
         if check_date_availability(data['date']):
-            menu = Menu.objects.create(date=data['date'])
+            menu = Menu.objects.create(date=data['date'], uuid=make_hash(data['date']))
             menu.combinations.add(*data['combinations'])
             serializer = MenuSerializer(menu)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -83,9 +85,10 @@ class MenuViewSet(viewsets.ModelViewSet):
         Checks if the field date won't be updated, otherwise checks availability to perform creation.
         """
         data = request.data
-        if 'date' not in data or check_date_availability(data['date']):
+        if 'date' not in data or check_date_availability(int(kwargs['pk']), data['date']):
             partial = kwargs.pop('partial', False)
             instance = self.get_object()
+            data['uuid'] = make_hash(instance.date)
             serializer = self.get_serializer(instance, data=data, partial=partial)
             serializer.is_valid(raise_exception=True)
             self.perform_update(serializer)
@@ -94,7 +97,7 @@ class MenuViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['POST'])
     def send_reminders(self, request):
-        send_slack_reminders(request.data['id'])
+        send_slack_reminders.delay(request.data['id'])
         return Response({'status': 'Working'}, status=status.HTTP_200_OK)
 
 
@@ -105,6 +108,9 @@ class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
 
     def create(self, request, *args, **kwargs):
+        """
+        Creation intercepted to verify due date or resubmission
+        """
         data = request.data
         owner = Employee.objects.get(id=request.user.id)
         menu = Menu.objects.get(id=data['menu'])

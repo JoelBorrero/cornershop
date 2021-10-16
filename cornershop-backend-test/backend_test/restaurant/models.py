@@ -30,6 +30,7 @@ class Combination(models.Model):
 class Menu(models.Model):
     date = models.DateField()
     combinations = models.ManyToManyField(Combination)
+    uuid = models.CharField(max_length=64)
 
     def __str__(self):
         return str(self.date)

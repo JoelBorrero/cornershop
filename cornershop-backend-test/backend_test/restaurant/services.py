@@ -1,62 +1,27 @@
+import hashlib
 import os
 import json
 from datetime import datetime
 
 import slack
+from django.contrib.auth.hashers import make_password
 
 from .models import Employee, Menu
-from .serializers import MealSerializer, CombinationSerializer
-from .tasks import send_reminder
 
 
-def send_slack_reminders(menu_id):
+def check_slack_users():
     """
-    This function allows to send in delay the task, to use as much celery workers as can,
-    so all the tasks runs next to the other one
-    @param: menu_id: INT: The id of the menu that will be notified to users
+    Iterates through Slack users and create/update it as Employee
     """
-    menu = Menu.objects.filter(id=menu_id).first()
-    message = [
-        {"type": "section",
-         "text": {
-             "type": "mrkdwn",
-             "text": f"Hello everyone!:smile:\nHere we have the *today's menu* ({menu.date}):"
-         }
-         },
-        {"type": "divider"},
-    ]
-    message.extend([
-        {"type": "section",
-         "text": {
-             "type": "mrkdwn",
-             "text": f":knife_fork_plate: *{o.description}*"
-         }
-         } for o in menu.combinations.all()])
-    message.extend(
-        [{"type": "divider"},
-         {"type": "section",
-          "text": {
-              "type": "mrkdwn",
-              "text": "Do you want to order right now?"
-          },
-          "accessory": {
-              "type": "button",
-              "text": {
-                  "type": "plain_text",
-                  "text": "Go to page"
-              },
-              "url": os.environ.get("BASE_HOST", "http://0.0.0.0:8000") + "/views/menu",
-              "action_id": "button-action"
-          }
-          }
-         ]
-    )
-    #  TODO Use token as environ variable
-    #  TODO Use client here to avoid re-creating it on each request
-    # client = slack.WebClient(os.environ.get('SLACK_TOKEN', 'xoxb-2593331801751-2605065321397-tBklm6beIrBH6oTmvvnoqL2J'))
-    for employee in Employee.objects.all()[:1]:
-        # send_reminder.delay(message, employee.slack_id)
-        send_reminder.delay(json.dumps(message), employee.slack_id)
+    client = slack.WebClient(os.environ.get('SLACK_TOKEN', '###SLACK_TOKEN###'))
+    users = client.users_list()
+    for user in users.data['members']:
+        if not user['is_bot'] and not user['id'] == 'USLACKBOT':
+            employee, created = Employee.objects.update_or_create(slack_id=user['id'], defaults={
+                'first_name': user['profile']['real_name_normalized'], 'username': user['name']})
+            if created:  # Verified to don't reset password
+                employee.password = make_password(user['name'])
+                employee.save()
 
 
 def get_menus_info():
@@ -100,9 +65,20 @@ def get_menus_info():
     return submittable, today_menu, next_menu
 
 
-def check_date_availability(date: datetime) -> bool:
+def check_date_availability(menu_id: int, date: datetime) -> bool:
     """
-    Check if the param date is available to perform creation or updates
-    @param: date: Date
+    Check if the param date is available to perform creation or updates.
+    Menu_id is requested to verify if found date refers to the same menu
+    @param: menu_id: int
+    @param: date: datetime
     """
-    return not Menu.objects.filter(date=date).first()
+    menu = Menu.objects.filter(date=date).first()
+    return menu.id == menu_id if menu else True
+
+
+def make_hash(date: datetime) -> str:
+    """
+    Returns a UUID for the date and the current timestamp
+    """
+    data = bytes(str(date) + str(datetime.now()), encoding='ascii')
+    return hashlib.sha256(data).hexdigest()

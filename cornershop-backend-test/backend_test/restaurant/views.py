@@ -70,8 +70,8 @@ def menu(request, *args, **kwargs):
     For users allows the selection of their preferred option.
     """
     if request.user.is_superuser:
-        if 'id' in kwargs:
-            menu = Menu.objects.get(id=kwargs['id'])
+        if 'uuid' in kwargs:
+            menu = Menu.objects.get(uuid=kwargs['uuid'])
             serializer = MenuSerializerDeep(menu).data
             for combination in serializer['combinations']:
                 # order = Order.objects.filter(Q(combination=combination['id']) & Q(menu=menu.id))
@@ -93,10 +93,11 @@ def menu(request, *args, **kwargs):
                         [meal.name for meal in Combination.objects.get(id=combination).meals.all()])
             template = loader.get_template('menu_admin.html')
             document = template.render({'combinations': combination_items, 'fields': MENU_FIELDS, 'table': menu_items})
-    elif request.user.is_authenticated:
+    elif request.user.is_authenticated and 'id' not in kwargs:
         submittable, today_menu, next_menu = get_menus_info()
         template = loader.get_template('menu.html')
         document = template.render({'today_menu': today_menu, 'next_menu': next_menu, 'submittable': submittable})
     else:
-        document = '<h1>Non-authenticated</h1>'
+        menu = Menu.objects.get(uuid=kwargs['uuid'])
+        document = f'<h1>{menu.date}</h1>'
     return HttpResponse(document, status=200)
