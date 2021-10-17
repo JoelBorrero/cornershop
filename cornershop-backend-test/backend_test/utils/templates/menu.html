@@ -13,7 +13,7 @@
                     {% for meal in combination.values %}
                         <h4>{{ meal }}</h4>
                     {% endfor %}
-                    {% if submittable %}
+                    {% if submittable and is_authenticated %}
                         <form action="javascript:request('/restaurant/order/', 'POST',
                         menu={{ today_menu.id }}, combination={{ combination.id }})" method="post">
                             {% if combination.index == 'Option 1' %}

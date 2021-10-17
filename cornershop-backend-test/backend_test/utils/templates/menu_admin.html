@@ -18,7 +18,7 @@
                         </ul>
                     </td>
                     <td>
-                        <a href="/views/menu/{{ row.id }}/">View</a>
+                        <a href="/views/menu/{{ row.uuid }}/">View</a>
                     </td>
                     <td>
                         <button onclick="edit({{ row.id }})">Edit</button>
@@ -91,7 +91,7 @@
                         {% endif %}
                     {% endfor %}
                     <input type="button" value="Cancel" onclick="cancel()">
-                    <input type="submit" value="Save" onclick="save()">
+                    <input type="submit" value="Save">
                 </form>
             </div>
         </div>
@@ -125,18 +125,13 @@
             editing =
             {{ table|safe }}.
             filter((t) => t.id == id)[0];
+            document.getElementById('date_edit').value = editing.date;
         }
 
         function cancel() {
             document.getElementById('create_menu').className = '';
             document.getElementById('edit_menu').className = 'hidden';
-            console.log('cancel');
         }
 
-        function save() {
-            //document.getElementById('create_menu').className = '';
-            //document.getElementById('edit_menu').className = 'hidden';
-            console.log(editing);
-        }
     </script>
 {% endblock content %}

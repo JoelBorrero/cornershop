@@ -73,7 +73,7 @@ class MenuViewSet(viewsets.ModelViewSet):
         Verify if the date is available to create the new menu.
         """
         data = request.data
-        if check_date_availability(data['date']):
+        if check_date_availability(-1, data['date']):
             menu = Menu.objects.create(date=data['date'], uuid=make_hash(data['date']))
             menu.combinations.add(*data['combinations'])
             serializer = MenuSerializer(menu)

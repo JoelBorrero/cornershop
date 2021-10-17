@@ -93,11 +93,11 @@ def menu(request, *args, **kwargs):
                         [meal.name for meal in Combination.objects.get(id=combination).meals.all()])
             template = loader.get_template('menu_admin.html')
             document = template.render({'combinations': combination_items, 'fields': MENU_FIELDS, 'table': menu_items})
-    elif request.user.is_authenticated and 'id' not in kwargs:
+    elif 'uuid' in kwargs or request.user.is_authenticated:
         submittable, today_menu, next_menu = get_menus_info()
         template = loader.get_template('menu.html')
-        document = template.render({'today_menu': today_menu, 'next_menu': next_menu, 'submittable': submittable})
+        document = template.render({'today_menu': today_menu, 'next_menu': next_menu, 'submittable': submittable,
+                                    'is_authenticated': request.user.is_authenticated})
     else:
-        menu = Menu.objects.get(uuid=kwargs['uuid'])
-        document = f'<h1>{menu.date}</h1>'
+        document = f'<h1>Welcome to Cornershop</h1><a href="/views/login">Login</a>'
     return HttpResponse(document, status=200)

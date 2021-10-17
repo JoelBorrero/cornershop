@@ -142,7 +142,10 @@
                 "X-CSRFToken": get_cookie("csrftoken"),
             },
             body: JSON.stringify(data),
-        });//.then(() => {alert('Sent!');location.reload();});
+        }).then(() => {
+            alert('Sent!');
+            location.reload();
+        });
     }
 
     function send_reminders(id) {
